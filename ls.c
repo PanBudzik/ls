@@ -11,41 +11,10 @@
 #include <pwd.h>
 #include <grp.h>
 
-int main(int argc, char *argv[])
-{
-
-    int c;
+void displayExtendedSingleRow(char *filename){
+        
     struct stat fs;
-    
 
-    if (argc == 1)
-    {
-        DIR *pDIR;
-        struct dirent *pDirEnt;
-        pDIR = opendir(".");
-        if (pDIR == NULL)
-        {
-            fprintf(stderr, "%s %d: opendir() failed (%s)\n",
-                    __FILE__, __LINE__, strerror(errno));
-            exit(-1);
-        }
-        pDirEnt = readdir(pDIR);
-        while (pDirEnt != NULL)
-        {
-            printf("%s\n", pDirEnt->d_name);
-            printf("%s\n", pDirEnt->d_name);
-            printf("%s\n", pDirEnt->d_name);
-            pDirEnt = readdir(pDIR);
-        }
-        closedir(pDIR);
-    }
-    else
-    {
-        while ((c = getopt(argc, argv, "lRc:")) != -1)
-            switch (c)
-            {
-            case 'l':
-                char *filename = argv[1];
                 int r = stat(filename,&fs);
                 if( r==-1 )
                 {
@@ -153,6 +122,41 @@ int main(int argc, char *argv[])
                 printf("%s",filename);
                 }
                 printf(" ");
+}
+
+int main(int argc, char *argv[])
+{
+    int c;
+
+    if (argc == 1)
+    {
+        DIR *pDIR;
+        struct dirent *pDirEnt;
+        pDIR = opendir(".");
+        if (pDIR == NULL)
+        {
+            fprintf(stderr, "%s %d: opendir() failed (%s)\n",
+                    __FILE__, __LINE__, strerror(errno));
+            exit(-1);
+        }
+        pDirEnt = readdir(pDIR);
+        while (pDirEnt != NULL)
+        {
+            printf("%s\n", pDirEnt->d_name);
+            printf("%s\n", pDirEnt->d_name);
+            printf("%s\n", pDirEnt->d_name);
+            pDirEnt = readdir(pDIR);
+        }
+        closedir(pDIR);
+    }
+    else
+    {
+        while ((c = getopt(argc, argv, "lRc:")) != -1)
+            switch (c)
+            {
+            case 'l':
+            char *filename = argv[1];
+                displayExtendedSingleRow(filename);
                 
                 break;
                 
