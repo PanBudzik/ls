@@ -114,8 +114,7 @@ int main(int argc, char *argv[])
                 printf(" ");
 
 
-                /*Nuber of soft links / symbolic links (pointers to file/directories)*/
-                printf("%lu",fs.st_ino);
+                /*Nuber of hard pointers (pointers to file)*/
                 printf("%lu",fs.st_nlink);
                 printf(" ");
                 
@@ -142,7 +141,17 @@ int main(int argc, char *argv[])
                 printf(" ");
 
                 /*Name of file*/
+                if(strrchr(filename, '/')){
+                    int i=strrchr(filename, '/')-filename+1;
+                    while (filename[i]!='\0')
+                    {
+                        printf("%c",filename[i]);  
+                        i++;
+                    }
+                }
+                else{
                 printf("%s",filename);
+                }
                 printf(" ");
                 
                 break;
