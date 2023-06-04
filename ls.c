@@ -19,6 +19,7 @@ void displayExtendedSingleRow(char *filename){
                 if( r==-1 )
                 {
                     fprintf(stderr,"File error\n");
+                    printf("%s",filename);
                     exit(1);
                 }
                 if( S_ISREG(fs.st_mode) )//file
@@ -121,69 +122,88 @@ void displayExtendedSingleRow(char *filename){
                 else{
                 printf("%s",filename);
                 }
-                printf(" ");
+                printf("\n");
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int c;
-    char lFlag,RFlag,cFlag;
+    char lFlag = 0;
+    char RFlag = 0;
+    char cFlag = 0;
     char *options = "lRc:";
+    char* directoryName = "";
     DIR *pDIR;
     struct dirent *pDirEnt;
-        
-    if(argc==1){
-        pDIR = opendir(".");
-    }
-    else if(argc==2){
-        pDIR = opendir(argv[1]);
-    }
-    if (pDIR == NULL)
-        {
-            printf("%s",argv[1]);
-            fprintf(stderr, "%s %d: opendir() failed (%s)\n",
-                    __FILE__, __LINE__, strerror(errno));
-            exit(-1);
-        }
-        while ((c = getopt(argc, argv, options)) != -1){
-            switch (c)
-            {
-            case 'l':
-            char *filename = argv[1];
-                displayExtendedSingleRow(filename);
-                
-                break;
-                
 
+    if (argc >= 2 && argv[1][0] != '-') {
+        directoryName = argv[1];
+    
+    } else {
+        directoryName = ".";
+    }
+    pDIR = opendir(directoryName);
+
+    if (pDIR == NULL) {
+        printf("%s", argv[1]);
+        fprintf(stderr, "%s %d: opendir() failed (%s)\n",
+                __FILE__, __LINE__, strerror(errno));
+        exit(-1);
+    }
+
+    while ((c = getopt(argc, argv, options)) != -1) {
+        switch (c) {
+            case 'l':
+                lFlag = 1;
+                break;
             case 'R':
-                printf("R");
+                RFlag = 1;
                 break;
             case 'c':
-                printf("%s",optarg);
+                cFlag = 1;
+                printf("%s", optarg);
                 break;
             case '?':
                 if (optopt == 'c')
-                fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-                else if (isprint (optopt))
-                fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (isprint(optopt))
+                    fprintf(stderr, "Unknown option `-%c'.\n", optopt);
                 else
-                fprintf (stderr,
-                        "Unknown option character `\\x%x'.\n",
-                        optopt);
+                    fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
                 return 1;
             default:
                 abort();
-            }
         }
-        if((c==-1))
-        {
-            pDirEnt = readdir(pDIR);
-            while (pDirEnt != NULL)
-            {
-                printf("%s\n", pDirEnt->d_name);
-                pDirEnt = readdir(pDIR);
-            }
-            closedir(pDIR);
+    }
+
+    if (lFlag) {
+        int dirLen = strlen(directoryName);
+    int fullLen;
+
+    while ((pDirEnt = readdir(pDIR)) != NULL) {
+        int fileLen = strlen(pDirEnt->d_name);
+        fullLen = dirLen + fileLen + 2;
+
+        char *fullPath = (char *)malloc(fullLen * sizeof(char));
+        if (fullPath == NULL) {
+            fprintf(stderr, "Memory allocation error\n");
+            exit(1);
         }
+
+        strcpy(fullPath, directoryName);
+        strcat(fullPath, "/");
+        strcat(fullPath, pDirEnt->d_name);
+
+        displayExtendedSingleRow(fullPath);
+
+        free(fullPath);
+    }
+    } else {
+        while ((pDirEnt = readdir(pDIR)) != NULL) {
+            printf("%s\n", pDirEnt->d_name);
+        }
+    }
+
+    closedir(pDIR);
+
     return 0;
 }
