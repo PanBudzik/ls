@@ -180,6 +180,7 @@ int main(int argc, char *argv[]) {
     int fullLen;
 
     while ((pDirEnt = readdir(pDIR)) != NULL) {
+        if(pDirEnt->d_name[0]!='.'){
         int fileLen = strlen(pDirEnt->d_name);
         fullLen = dirLen + fileLen + 2;
 
@@ -196,10 +197,13 @@ int main(int argc, char *argv[]) {
         displayExtendedSingleRow(fullPath);
 
         free(fullPath);
+        }
     }
     } else {
         while ((pDirEnt = readdir(pDIR)) != NULL) {
+            if(pDirEnt->d_name[0]!='.'){
             printf("%s\n", pDirEnt->d_name);
+            }
         }
     }
 
