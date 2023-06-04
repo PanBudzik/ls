@@ -154,9 +154,6 @@ void listDirectoriesRecursively(char *directoryName) {
     }
 
     while ((pDirEnt = readdir(pDIR)) != NULL) {
-        // if (strcmp(pDirEnt->d_name, ".") == 0 || strcmp(pDirEnt->d_name, "..") == 0) {
-        //     continue;  // Skip current directory and parent directory entries
-        // }
 
         char fullPath[PATH_MAX];
         snprintf(fullPath, sizeof(fullPath), "%s/%s", directoryName, pDirEnt->d_name);
@@ -164,12 +161,10 @@ void listDirectoriesRecursively(char *directoryName) {
         struct stat fs;
         int r = stat(fullPath, &fs);
         if (r == -1) {
-            //fprintf(stderr, "File error: %s\n", fullPath);
             continue;
         }
 
         if (S_ISDIR(fs.st_mode)&&pDirEnt->d_name[0]!='.') {
-            // It's a directory, print its contents and recurse into it
             printf("%s:\n", fullPath);
 
             listDierctory(fullPath);
@@ -184,14 +179,15 @@ void listDirectoriesRecursively(char *directoryName) {
 
 int main(int argc, char *argv[]) {
     int c;
-    char lFlag = 0;
-    char RFlag = 0;
-    char cFlag = 0;
-    char *options = "lRc:";
+    char lFlag = 0; //use a long listing format
+    char RFlag = 0; //list subdirectories recursively
+    char aFlag = 0; //do not ignore entries starting with .
+    char QFlag = 0; //enclose entry names in double quotes
+    char iFlag = 0; //print the index number of each file
+    char *options = "lRaQi";
     char* directoryName = "";
     DIR *pDIR;
     struct dirent *pDirEnt;
-
     if (argc >= 2 && argv[1][0] != '-') {
         directoryName = argv[1];
     
@@ -215,25 +211,22 @@ int main(int argc, char *argv[]) {
             case 'R':
                 RFlag = 1;
                 break;
-            case 'c':
-                cFlag = 1;
-                printf("%s", optarg);
+            case 'a':
+                aFlag=1;
                 break;
-            case '?':
-                if (optopt == 'c')
-                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-                else if (isprint(optopt))
-                    fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-                else
-                    fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-                return 1;
+            case 'Q':
+                QFlag=1;
+                break;
+            case 'i':
+                iFlag=1;
+                break;
             default:
                 abort();
         }
     }
 
     if (lFlag) {
-        int dirLen = strlen(directoryName);
+    int dirLen = strlen(directoryName);
     int fullLen;
 
     while ((pDirEnt = readdir(pDIR)) != NULL) {
@@ -262,7 +255,29 @@ int main(int argc, char *argv[]) {
         listDierctory(directoryName);
         listDirectoriesRecursively(directoryName);
 
-    } else {
+    } else if(aFlag){
+        while ((pDirEnt = readdir(pDIR)) != NULL) {
+            printf("%s\n", pDirEnt->d_name);
+        }
+    } 
+    else if(QFlag){
+        while ((pDirEnt = readdir(pDIR)) != NULL) {
+            if(pDirEnt->d_name[0]!='.'){
+            printf("\"");
+            printf("%s", pDirEnt->d_name);
+            printf("\"\n");
+            }
+        }
+    } else if(iFlag){
+        while ((pDirEnt = readdir(pDIR)) != NULL) {
+            if(pDirEnt->d_name[0]!='.'){
+                printf("%ld", pDirEnt->d_ino);
+                printf("  ");
+                printf("%s\n", pDirEnt->d_name);
+            }
+        }
+    }
+    else {
         while ((pDirEnt = readdir(pDIR)) != NULL) {
             if(pDirEnt->d_name[0]!='.'){
             printf("%s\n", pDirEnt->d_name);
