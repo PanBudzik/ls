@@ -127,31 +127,25 @@ void displayExtendedSingleRow(char *filename){
 int main(int argc, char *argv[])
 {
     int c;
-
-    if (argc == 1)
-    {
-        DIR *pDIR;
-        struct dirent *pDirEnt;
+    char lFlag,RFlag,cFlag;
+    char *options = "lRc:";
+    DIR *pDIR;
+    struct dirent *pDirEnt;
+        
+    if(argc==1){
         pDIR = opendir(".");
-        if (pDIR == NULL)
+    }
+    else if(argc==2){
+        pDIR = opendir(argv[1]);
+    }
+    if (pDIR == NULL)
         {
+            printf("%s",argv[1]);
             fprintf(stderr, "%s %d: opendir() failed (%s)\n",
                     __FILE__, __LINE__, strerror(errno));
             exit(-1);
         }
-        pDirEnt = readdir(pDIR);
-        while (pDirEnt != NULL)
-        {
-            printf("%s\n", pDirEnt->d_name);
-            printf("%s\n", pDirEnt->d_name);
-            printf("%s\n", pDirEnt->d_name);
-            pDirEnt = readdir(pDIR);
-        }
-        closedir(pDIR);
-    }
-    else
-    {
-        while ((c = getopt(argc, argv, "lRc:")) != -1)
+        while ((c = getopt(argc, argv, options)) != -1){
             switch (c)
             {
             case 'l':
@@ -180,53 +174,16 @@ int main(int argc, char *argv[])
             default:
                 abort();
             }
-    }
+        }
+        if((c==-1))
+        {
+            pDirEnt = readdir(pDIR);
+            while (pDirEnt != NULL)
+            {
+                printf("%s\n", pDirEnt->d_name);
+                pDirEnt = readdir(pDIR);
+            }
+            closedir(pDIR);
+        }
     return 0;
 }
-
-// int
-// main (int argc, char **argv)
-// {
-//   int aflag = 0;
-//   int bflag = 0;
-//   char *cvalue = NULL;
-//   int index;
-//   int c;
-
-//   opterr = 0;
-
-//   if(argc==1)
-//   {
-//   while ((c = getopt (argc, argv, "abc:")) != -1)
-//     switch (c)
-//       {
-//       case 'a':
-//         aflag = 1;
-//         break;
-//       case 'b':
-//         bflag = 1;
-//         break;
-//       case 'c':
-//         cvalue = optarg;
-//         break;
-//       case '?':
-//         if (optopt == 'c')
-//           fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-//         else if (isprint (optopt))
-//           fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-//         else
-//           fprintf (stderr,
-//                    "Unknown option character `\\x%x'.\n",
-//                    optopt);
-//         return 1;
-//       default:
-//         abort ();
-//       }
-
-//   printf ("aflag = %d, bflag = %d, cvalue = %s\n",
-//           aflag, bflag, cvalue);
-
-//   for (index = optind; index < argc; index++)
-//     printf ("Non-option argument %s\n", argv[index]);
-//   return 0;
-// }
