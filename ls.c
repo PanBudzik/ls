@@ -125,6 +125,63 @@ void displayExtendedSingleRow(char *filename){
                 printf("\n");
 }
 
+void listDierctory(char *directoryName){
+    DIR *pDIR;
+    struct dirent *pDirEnt;
+    pDIR = opendir(directoryName);
+    if (pDIR == NULL) {
+        fprintf(stderr, "%s %d: opendir() failed (%s)\n",
+                __FILE__, __LINE__, strerror(errno));
+        return;
+    }
+    while ((pDirEnt = readdir(pDIR)) != NULL) {
+            if(pDirEnt->d_name[0]!='.'&&pDirEnt->d_name[0]!='\0'){
+            printf("%s\n", pDirEnt->d_name);
+            }
+        }
+        closedir(pDIR);
+}
+
+void listDirectoriesRecursively(char *directoryName) {
+    DIR *pDIR;
+    struct dirent *pDirEnt;
+
+    pDIR = opendir(directoryName);
+    if (pDIR == NULL) {
+        fprintf(stderr, "%s %d: opendir() failed (%s)\n",
+                __FILE__, __LINE__, strerror(errno));
+        return;
+    }
+
+    while ((pDirEnt = readdir(pDIR)) != NULL) {
+        // if (strcmp(pDirEnt->d_name, ".") == 0 || strcmp(pDirEnt->d_name, "..") == 0) {
+        //     continue;  // Skip current directory and parent directory entries
+        // }
+
+        char fullPath[PATH_MAX];
+        snprintf(fullPath, sizeof(fullPath), "%s/%s", directoryName, pDirEnt->d_name);
+
+        struct stat fs;
+        int r = stat(fullPath, &fs);
+        if (r == -1) {
+            //fprintf(stderr, "File error: %s\n", fullPath);
+            continue;
+        }
+
+        if (S_ISDIR(fs.st_mode)&&pDirEnt->d_name[0]!='.') {
+            // It's a directory, print its contents and recurse into it
+            printf("%s:\n", fullPath);
+
+            listDierctory(fullPath);
+            printf("\n");
+            
+            listDirectoriesRecursively(fullPath);
+        }
+    }
+
+    closedir(pDIR);
+}
+
 int main(int argc, char *argv[]) {
     int c;
     char lFlag = 0;
@@ -199,6 +256,12 @@ int main(int argc, char *argv[]) {
         free(fullPath);
         }
     }
+    }
+    else if(RFlag){
+        printf(".:\n");
+        listDierctory(directoryName);
+        listDirectoriesRecursively(directoryName);
+
     } else {
         while ((pDirEnt = readdir(pDIR)) != NULL) {
             if(pDirEnt->d_name[0]!='.'){
